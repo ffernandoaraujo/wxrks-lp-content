@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>wxrks × Contentful — Connector</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #000;
+    --ink: #fff;
+    --muted: #7d827a;
+    --line: #181b17;
+    --accent: #5cff4a;
+    --accent-dim: #2c8f22;
+    --card: #070907;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    background:var(--bg); color:var(--ink);
+    font-family:'Space Grotesk',sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  /* glow + scanline atmosphere */
+  body::before {
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(800px 600px at 100% -10%, rgba(92,255,74,0.10), transparent 55%),
+      radial-gradient(600px 500px at -10% 110%, rgba(92,255,74,0.05), transparent 55%);
+  }
+  body::after {
+    content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 3px);
+  }
+  .wrap { position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 32px; }
+
+  /* top bar */
+  nav {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:26px 0; border-bottom:1px solid var(--line);
+    animation:fadeDown .7s ease both;
+  }
+  .brand { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:16px; letter-spacing:-0.01em; display:flex; align-items:center; gap:8px; }
+  .brand .x { color:var(--accent); }
+  .brand .sep { color:var(--muted); font-weight:400; }
+  .status { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); display:flex; align-items:center; gap:9px; }
+  .status .pulse { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); animation:pulse 1.8s infinite; }
+
+  /* hero: asymmetric grid */
+  .hero { padding:90px 0 60px; }
+  .eyebrow {
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:0.12em;
+    color:var(--accent); text-transform:uppercase; margin-bottom:26px;
+    animation:fadeUp .7s ease .05s both;
+  }
+  h1 {
+    font-family:'Anton',sans-serif; font-weight:400;
+    font-size:clamp(54px, 9vw, 120px); line-height:0.9; max-width:14ch; letter-spacing:-0.01em;
+    text-transform:uppercase; animation:fadeUp .7s ease .12s both;
+  }
+  h1 .grad { color:var(--accent); display:block; }
+  .sub {
+    margin-top:30px; font-size:clamp(17px,1.6vw,20px); color:var(--muted);
+    max-width:40ch; animation:fadeUp .7s ease .2s both;
+  }
+  .sub strong { color:var(--ink); font-weight:500; }
+
+  /* right: conceptual before/after flow */
+  .flow { border:1px solid var(--line); border-radius:16px; padding:30px 28px; background:var(--card); animation:fadeUp .7s ease .28s both; margin-top:6px; }
+  .flow-row { display:flex; flex-direction:column; gap:14px; }
+  .flow-tag { align-self:flex-start; font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:4px 12px; }
+  .flow-tag.on { color:#001400; background:var(--accent); border-color:var(--accent); }
+  .flow-steps { display:flex; align-items:center; gap:11px; flex-wrap:wrap; }
+  .flow-steps span { font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--muted); padding:8px 13px; border:1px solid var(--line); border-radius:9px; }
+  .flow-steps span.hot { color:var(--ink); border-color:var(--accent-dim); background:rgba(92,255,74,0.06); }
+  .flow-steps i { color:#3a3f37; font-style:normal; font-size:15px; }
+  .flow-note { font-family:'JetBrains Mono',monospace; font-size:12px; color:#4a5147; }
+  .flow-divider { display:flex; align-items:center; gap:14px; margin:22px 0; color:var(--accent); font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:0.08em; text-transform:uppercase; }
+  .flow-divider::before, .flow-divider::after { content:""; height:1px; flex:1; background:var(--line); }
+
+  /* benefits as a row of ledger lines */
+  .benefits { border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin:30px 0 0; }
+  .benefit {
+    display:grid; grid-template-columns:64px 1fr 2fr; gap:24px; align-items:center;
+    padding:26px 4px; border-bottom:1px solid var(--line); animation:fadeUp .7s ease both;
+  }
+  .benefit:last-child { border-bottom:none; }
+  .benefit:nth-child(1){ animation-delay:.34s; }
+  .benefit:nth-child(2){ animation-delay:.42s; }
+  .benefit:nth-child(3){ animation-delay:.5s; }
+  .benefit .n { font-family:'JetBrains Mono',monospace; color:var(--accent); font-size:14px; }
+  .benefit h3 { font-size:21px; font-weight:600; letter-spacing:-0.02em; }
+  .benefit p { color:var(--muted); font-size:15px; }
+  @media(min-width:761px){ .benefit:hover { background:linear-gradient(90deg, rgba(92,255,74,0.03), transparent); } }
+
+  /* form section */
+  .cta { display:grid; grid-template-columns:1fr 1.1fr; gap:56px; align-items:center; padding:80px 0; }
+  .cta-left h2 { font-family:'Anton',sans-serif; font-weight:400; text-transform:uppercase; font-size:clamp(36px,4.5vw,56px); line-height:0.92; letter-spacing:0; }
+  .cta-left h2 .grad { color:var(--accent); }
+  .cta-left p { margin-top:18px; color:var(--muted); font-size:16px; max-width:34ch; }
+  .cta-left .meta { margin-top:24px; font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:9px; }
+  .cta-left .meta .dot { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+
+  .panel { border:1px solid var(--line); border-radius:18px; padding:34px; background:var(--card); animation:fadeUp .7s ease .3s both; }
+  form { display:grid; gap:15px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+  .field { display:flex; flex-direction:column; gap:7px; }
+  .field label { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); }
+  .field input {
+    background:#000; border:1px solid var(--line); border-radius:10px; padding:13px 14px;
+    color:var(--ink); font-family:inherit; font-size:15px; transition:border-color .18s, box-shadow .18s;
+  }
+  .field input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(92,255,74,0.14); }
+  .field input::placeholder { color:#3c4039; }
+
+  .buttons { display:grid; grid-template-columns:1.3fr 1fr; gap:12px; margin-top:6px; }
+  button { font-family:inherit; font-weight:600; font-size:15px; border-radius:11px; padding:15px 18px; cursor:pointer; border:1px solid transparent; transition:transform .15s, box-shadow .2s, background .2s; }
+  button:active { transform:translateY(1px); }
+  .btn-primary { background:var(--accent); color:#001400; box-shadow:0 8px 28px rgba(92,255,74,0.28); }
+  .btn-primary:hover { background:#74ff64; box-shadow:0 10px 38px rgba(92,255,74,0.42); }
+  .btn-secondary { background:transparent; color:var(--ink); border-color:var(--line); }
+  .btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-outline { background:transparent; color:var(--accent); border-color:var(--accent-dim); }
+  .btn-outline:hover { border-color:var(--accent); background:rgba(92,255,74,0.06); }
+
+  .success { display:none; text-align:left; }
+  .success.show { display:block; animation:fadeUp .5s ease both; }
+  .success .check { width:52px; height:52px; border-radius:50%; background:rgba(92,255,74,0.1); border:1px solid var(--accent); color:var(--accent); display:grid; place-items:center; font-size:24px; margin-bottom:18px; }
+  .success h3 { font-size:24px; margin-bottom:8px; letter-spacing:-0.02em; }
+  .success p { color:var(--muted); }
+  .loading { opacity:.6; pointer-events:none; }
+
+  /* footer trust */
+  footer { border-top:1px solid var(--line); padding:34px 0 70px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; }
+  footer .lbl { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:#3f443c; }
+  .logos { display:flex; gap:32px; flex-wrap:wrap; font-weight:600; font-size:16px; color:#34382f; }
+
+  @keyframes fadeUp { from{opacity:0; transform:translateY(16px);} to{opacity:1; transform:none;} }
+  @keyframes fadeDown { from{opacity:0; transform:translateY(-12px);} to{opacity:1; transform:none;} }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+  @media(max-width:880px){
+    .hero { grid-template-columns:1fr; gap:38px; padding:54px 0 30px; }
+    .cta { grid-template-columns:1fr; gap:36px; padding:50px 0; }
+    .benefit { grid-template-columns:40px 1fr; }
+    .benefit p { grid-column:2; }
+    .row { grid-template-columns:1fr; }
+    .buttons { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <div class="brand">wxrks <span class="sep">/</span> contentful <span class="x">connector</span></div>
+    <div class="status"><span class="pulse"></span> early access</div>
+  </nav>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">// new integration</div>
+      <h1>wxrks now connects <span class="grad">straight to Contentful.</span></h1>
+      <p class="sub">Less manual work for your team. <strong>More content shipped.</strong></p>
+    </div>
+  </section>
+
+  <section class="benefits">
+    <div class="benefit">
+      <div class="n">[01]</div>
+      <h3>Faster, fewer errors</h3>
+      <p>Content goes out for translation and comes back ready to use — with far less manual work.</p>
+    </div>
+    <div class="benefit">
+      <div class="n">[02]</div>
+      <h3>Built to scale</h3>
+      <p>Add new languages and markets without adding work. It all happens inside Contentful.</p>
+    </div>
+    <div class="benefit">
+      <div class="n">[03]</div>
+      <h3>Less overhead. More output.</h3>
+      <p>Your team focuses on the product, not on translation.</p>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="cta-left">
+      <h2>Get <span class="grad">early access.</span></h2>
+      <p>For enterprise teams running global content on Contentful.</p>
+      <div class="meta"><span class="dot"></span> Limited early access</div>
+    </div>
+
+    <div class="panel">
+      <div id="formView">
+        <form id="leadForm">
+          <div class="row">
+            <div class="field">
+              <label for="name">Name</label>
+              <input id="name" name="name" type="text" placeholder="Your full name" required />
+            </div>
+            <div class="field">
+              <label for="email">Work email</label>
+              <input id="email" name="email" type="email" placeholder="you@company.com" required />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="company">Company</label>
+              <input id="company" name="company" type="text" placeholder="Company name" required />
+            </div>
+            <div class="field">
+              <label for="role">Role</label>
+              <input id="role" name="role" type="text" placeholder="e.g. CTO, Eng. Director" />
+            </div>
+          </div>
+          <div class="buttons">
+            <button type="submit" class="btn-primary" data-interest="demo">Book a demo →</button>
+            <button type="submit" class="btn-outline" data-interest="waitlist">Join the waitlist</button>
+          </div>
+        </form>
+      </div>
+      <div class="success" id="successView">
+        <div class="check">✓</div>
+        <h3 id="successTitle">You're in.</h3>
+        <p id="successMsg">We'll be in touch shortly.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span class="lbl">// trusted by global teams</span>
+    <div class="logos"><span>Coca-Cola</span><span>Uber</span><span>Harley-Davidson</span><span>Zendesk</span><span>Duolingo</span></div>
+  </footer>
+
+</div>
+
+<script>
+  const WEBHOOK_URL = "https://ffernandoaraujo.app.n8n.cloud/webhook/fcdf3d21-8507-4f44-a081-dc2cb183afeb";
+  const form = document.getElementById("leadForm");
+  const formView = document.getElementById("formView");
+  const successView = document.getElementById("successView");
+  const successTitle = document.getElementById("successTitle");
+  const successMsg = document.getElementById("successMsg");
+  let chosenInterest = "waitlist";
+  document.querySelectorAll("button[type=submit]").forEach(btn => {
+    btn.addEventListener("click", () => { chosenInterest = btn.dataset.interest; });
+  });
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      company: document.getElementById("company").value.trim(),
+      role: document.getElementById("role").value.trim(),
+      interest: chosenInterest
+    };
+    formView.classList.add("loading");
+    try {
+      await fetch(WEBHOOK_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
+      if (chosenInterest === "demo") {
+        successTitle.textContent = "Demo requested.";
+        successMsg.textContent = "Our team will reach out to schedule it shortly.";
+      } else {
+        successTitle.textContent = "You're on the list.";
+        successMsg.textContent = "We'll let you know the moment the connector goes live.";
+      }
+      formView.style.display = "none";
+      successView.classList.add("show");
+    } catch (err) {
+      formView.classList.remove("loading");
+      alert("Something went wrong. Please try again.");
+    }
+  });
+</script>
+</body>
+</html>
